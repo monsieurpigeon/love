@@ -1,41 +1,43 @@
-local r1, r2
+local player, enemy
 
 function love.load()
-    --Create 2 rectangles
-    r1 = {
-        x = 10,
-        y = 100,
-        width = 100,
-        height = 100
-    }
+    Object = require "classic"
+    require "player"
+    require "enemy"
+    require "bullet"
 
-    r2 = {
-        x = 250,
-        y = 120,
-        width = 150,
-        height = 120
-    }
+    player = Player()
+    enemy = Enemy()
+    ListOfBullets = {}
 end
 
 function love.update(dt)
-    --Make one of rectangle move
-    r1.x = r1.x + 100 * dt
+    player:update(dt)
+    enemy:update(dt)
+
+    for i, v in ipairs(ListOfBullets) do
+        v:update(dt)
+        v:checkCollision(enemy)
+
+        --If the bullet has the property dead and it's true then..
+        if v.dead then
+            --Remove it from the list
+            table.remove(ListOfBullets, i)
+        end
+    end
 end
 
 function love.draw()
-    --We create a local variable called mode
-    local mode
-    if checkCollision(r1, r2) then
-        --If there is collision, draw the rectangles filled
-        mode = "fill"
-    else
-        --else, draw the rectangles as a line
-        mode = "line"
-    end
+    player:draw()
+    enemy:draw()
 
-    --Use the variable as first argument
-    love.graphics.rectangle(mode, r1.x, r1.y, r1.width, r1.height)
-    love.graphics.rectangle(mode, r2.x, r2.y, r2.width, r2.height)
+    for i, v in ipairs(ListOfBullets) do
+        v:draw()
+    end
+end
+
+function love.keypressed(key)
+    player:keyPressed(key)
 end
 
 function checkCollision(a, b)
